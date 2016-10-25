@@ -3,14 +3,16 @@
 
 crt.Screen.Synchronous = True
 ' All configurable options are here
-Dim USERNAME, PASSWORD, NPA, HMX, STNSZ
+Dim USERNAME, PASSWORD, NPA, HMX, STNSZ, LSRD, DIAL_OUT
 USERNAME = "root"
 PASSWORD = "yam"
 NPA 	 = "312"
 HMX 	 = "360"
 SEQUENCE = "consecutive"
 START    = "1000"
-
+PRI      = True
+LSRD	 = True
+DIAL_OUT = "99" ' 99 for commercial, 94 for DoD lines
 
 ' Not directly editable, but reliant on HMX len
 STNSZ    = 7 - Len(HMX)
@@ -29,7 +31,7 @@ Sub Login()
 	crt.Screen.WaitForString home_dir
 End Sub
 
-Sub Generate_POTS()
+Sub Fill_HW()
 	' Generate the system and the hardware pls
 	crt.Screen.Send "gen" & chr(13)
 	crt.Screen.WaitForString gen_dir
@@ -91,6 +93,24 @@ Sub PRI_Trunk()
 	crt.Screen.WaitForString adm_dir
 End Sub
 
+Sub LSRD_Trunk()
+	crt.Screen.Send "group;new=trk" & chr(13)
+	' TODO: Somehow get the group number of the new group in case we're only doing LSRD and not also PRI
+	crt.Screen.Send "group=2;name=LSRD;dial=dtmf;tie;mem;add=10/0/0;qty=2;ex;ac" & chr(13)
+	' DCT Shit, yo
+	' TODO: Find which DCT entry corresponds to which number
+	crt.Screen.Send "dct=3;" & chr(13)
+	If (Mid( DIAL_OUT, 2, 1 ) == "9") Then
+		' Second dial-out digit is 9
+	End If
+	If (Mid( DIAL_OUT, 2, 1 ) == "4") Then
+		' Second dial-out digit is 4
+	End If
+
+	crt.Screen.Send "ex;ac" & chr(13)
+	crt.Screen.WaitForString adm_dir
+End Sub
+
 Sub Main()
 	Login()
 
@@ -107,7 +127,7 @@ Sub Main()
 
 	Login()
 
-	Generate_POTS()
+	Fill_HW()
 
 	crt.Screen.WaitForString home_dir
 	crt.Screen.Send "adm" & chr(13)
@@ -117,6 +137,13 @@ Sub Main()
 	If (SEQUENCE <> "consecutive") Then
 		Add_POTS()
 	End If
-	PRI_Trunk()
+
+	If (PRI == True) Then
+		PRI_Trunk()
+	End If
+
+	If (LSRD == True) Then
+		LSRD_Trunk()
+	End If
 
 End Sub

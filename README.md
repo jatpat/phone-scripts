@@ -8,3 +8,4 @@ Currently supports:
     * PRI Trunk
     * 3/4 dialing
     * 4/3 dialing
+    * LSRD
