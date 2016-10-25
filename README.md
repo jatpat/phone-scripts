@@ -1,6 +1,7 @@
 phone-scripts
 ====
 A collection of scripts for programming telecomms hardware.
+Works with SecureCRT
 
 Currently supports:
 * Redcom SLICE
